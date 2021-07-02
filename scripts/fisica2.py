@@ -1,9 +1,9 @@
-"""
-    Módulo de funciones para Física II.
+# -*- coding: utf-8 -*-
 
-    author: Gabriel Montoiro Varela
-    ver:    0.1
-"""
+# Módulo de funciones para Física II.
+# --------------------------------------------------------
+# autor: Gabriel Montoiro Varela
+# ver:   0.1
 
 import numpy as np
 
