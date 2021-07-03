@@ -9,7 +9,7 @@
 import numpy as np
 import fisica2 as f2
 
-class MyArmController():
+class MyRoboticArm():
     """Implementa la geometría y lógica de cálculo del brazo articulado."""
     
     def __init__(self, l1, l2, l3):

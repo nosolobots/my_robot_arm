@@ -21,6 +21,15 @@
         </joint>
     </xacro:macro>
 
+    <xacro:macro name="m_joint_f" params="name axis_xyz origin_rpy origin_xyz parent child">
+        <joint name="${name}" type="fixed">
+            <axis xyz="${axis_xyz}"/>
+            <origin rpy="${origin_rpy}" xyz="${origin_xyz}"/>
+            <parent link="${parent}"/>
+            <child link="${child}"/>
+        </joint>
+    </xacro:macro>
+
     <xacro:macro name="m_link_cylinder" params="name origin_rpy origin_xyz radius length material">
         <link name="${name}">
             <visual>
@@ -156,5 +165,13 @@
     
     <material name="yellow">
         <color rgba="1 1 0 1"/>
+    </material>
+
+    <material name="green">
+        <color rgba="0 1 0 1"/>
+    </material>
+
+    <material name="blue">
+        <color rgba="0 0 1 1"/>
     </material>
 </robot>

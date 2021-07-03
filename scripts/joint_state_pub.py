@@ -1,9 +1,12 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import roslib
 import rospy
 from sensor_msgs.msg import JointState
 
 if __name__ == '__main__':
-    rospy.init_node('myrobot_joint_state_publisher')
+    rospy.init_node('myrobot_joint_state_pub')
     r = rospy.Rate(1)
 
     theta = 0.0

@@ -9,7 +9,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits import mplot3d
-import my_robot_arm_controller as rob
+import time
+from my_robot_arm_controller import MyRoboticArm
+from my_robot_arm_node import MyRoboticArmNode
 
 def clear_screen():
     # códigos de escape ANSI para borrar el terminal (ESC [ 2J) y 
@@ -29,6 +31,7 @@ def show_header():
 
 def show_menu():
     show_header()
+    print "\t\tR - Resetear robot"
     print "\t\tE - Mostrar estado"
     print "\t\tP - Posicionar brazo (CD)"
     print "\t\tG - Generar gráfica (CD)"
@@ -37,13 +40,31 @@ def show_menu():
     
 def get_menu_option():
     opc = None
-    while opc not in ('E', 'P', 'G', 'S'):
+    while opc not in ('R', 'E', 'P', 'G', 'S'):
         show_menu()
         opc = raw_input("\tOpción > ").upper()
     return opc
 
 def end_option():
     raw_input("\n\tPulsa [Ret] para salir")
+
+def opc_reset(arm, arm_ros_node):
+    """
+    Parámetros
+    ----------
+    arm : MyArmController
+        instancia del brazo articulado
+    arm_ros_node : MyArmControllerNode
+        instancia del nodo ROS
+    """
+    show_header()
+
+    print "\tReseteando el robot a su posición 0..."
+
+    arm.set_theta(np.zeros(6))
+    arm_ros_node.publish_state()
+
+    end_option()
 
 def opc_mostrar_estado(arm):
     """
@@ -53,8 +74,44 @@ def opc_mostrar_estado(arm):
         instancia del brazo articulado
     """
     show_header()
+
     print "\tMostrando estado del robot:\n"
     print arm # imprime el estado completo del robot
+
+    end_option()
+
+def opc_posicionar_brazo(arm, arm_ros_node):
+    """
+    Parámetros
+    ----------
+    arm : MyArmController
+        instancia del brazo articulado
+    arm_ros_node : MyArmControllerNode
+        instancia del nodo ROS
+    """
+    show_header()
+    
+    print "\tPosicionar elemento terminal del robot:\n"
+    print "\tIndica el valor de las articulaciones"
+    print "\t - Para las rotaciones el rango máximo debe ser [0, 2*PI]"
+    print "\t - Para la traslación el rango máximo debe ser [-L3/2, L3/2]\n"
+
+    theta = arm.get_theta() # inicializamos con los valores actuales
+    for i in range(6):
+        val = raw_input("\tTheta[" + str(i) + "] (actual=" + str(theta[i]) + "): ")
+        if len(val)>0:
+            theta[i] = float(val)
+
+    print "\n\tReposicionando brazo..."
+
+    # ajuste por las dimensiones en el archivo URDF
+    theta[2] *= (0.13/2.5)
+    arm.set_theta(theta)
+    arm_ros_node.publish_state()
+
+    print "\n\tNueva posición del elemento terminal:\n"
+    print arm
+
     end_option()
 
 def opc_genera_grafica(arm):
@@ -72,6 +129,7 @@ def opc_genera_grafica(arm):
         instancia del brazo articulado
     """
     show_header()
+
     print "\tGenerador de gráficas:\n"
     print "\tIndica las articulaciones a mover, sus valores inicial y final, y el paso"
     print "\t - Para las rotaciones el rango máximo debe ser [0, 2*PI]"
@@ -129,21 +187,36 @@ def opc_genera_grafica(arm):
     plt.show()
 
     end_option()
+    
+def main():
+    """Programa principal."""
 
-if __name__ == '__main__':
     # creamos una instancia del brazo articulado a partir de las dimensiones de los eslabones
-    arm = rob.MyArmController(5, 5, 5)
+    arm = MyRoboticArm(5, 5, 5)
+
+    # creamos el nodo ROS que publicará el estado del brazo
+    arm_ros_node = MyRoboticArmNode(arm)
+
+    time.sleep(1) # pequeña pausa para que se inicie el nodo ROS 
+    arm_ros_node.publish_state()
     
     # bucle principal
     opc = None
     while opc != 'S':
         opc = get_menu_option()
 
+        if opc == 'R':
+            opc_reset(arm, arm_ros_node)
+
         if opc == 'E':
             opc_mostrar_estado(arm)
+
+        elif opc == 'P':
+            opc_posicionar_brazo(arm, arm_ros_node)     
 
         elif opc == 'G':
             opc_genera_grafica(arm)     
 
-
+if __name__ == '__main__':
+    main()
 
